@@ -7,19 +7,44 @@ import Payment from "../models/Payment.js";
  */
 export const createOrder = async (req, res) => {
   try {
-    const { items, total, userId } = req.body;
+    const {
+      name,
+      email,
+      address,
+      paymentMethod,
+      items,
+      total,
+      userId,
+    } = req.body;
 
     // Validaciones básicas
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: "La orden debe tener al menos un producto" });
+      return res.status(400).json({
+        success: false,
+        message: "La orden debe tener al menos un producto",
+      });
     }
 
     if (!total || total <= 0) {
-      return res.status(400).json({ message: "El total de la orden no es válido" });
+      return res.status(400).json({
+        success: false,
+        message: "El total de la orden no es válido",
+      });
     }
 
-    // Crear orden
+    if (!name || !email || !address) {
+      return res.status(400).json({
+        success: false,
+        message: "Faltan los datos del comprador",
+      });
+    }
+
+    // Crear la orden
     const order = await Order.create({
+      name,
+      email,
+      address,
+      paymentMethod,
       items,
       total,
       userId: userId || null,
@@ -41,6 +66,7 @@ export const createOrder = async (req, res) => {
     });
   }
 };
+
 
 /**
  * 🔵 Obtener todas las órdenes (con pagos)

@@ -5,16 +5,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { sequelize, connectDB } from "./config/db.js";
 
-// Importar modelos
-import "./models/Order.js";
-import "./models/Payment.js";
-import "./models/Product.js";
-
-// Importar rutas
-import paymentRoutes from "./routes/paymentRoutes.js";
-import orderRoutes from "./routes/orderRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
-
 dotenv.config();
 
 const app = express();
@@ -25,6 +15,16 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// 🧩 Importar modelos (en orden)
+import Order from "./models/Order.js";
+import Payment from "./models/Payment.js";
+import Product from "./models/Product.js";
+
+// 🧭 Importar rutas
+import paymentRoutes from "./routes/paymentRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 // 🔗 Rutas API
 app.use("/api/products", productRoutes);
@@ -38,12 +38,15 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// 🚀 Envolver el arranque en una función async
+// 🚀 Función para iniciar el servidor
 const startServer = async () => {
   try {
     console.log("🟡 Conectando a la base de datos...");
     await connectDB();
-    await sequelize.sync(); // ⚡ más rápido que alter:true
+
+    // 🔁 Sincronizar todos los modelos y relaciones
+    await sequelize.sync({ alter: true });
+    console.log("🗄️ Base de datos sincronizada correctamente.");
 
     app.listen(PORT, () => {
       console.log(`✅ Servidor corriendo en puerto ${PORT}`);

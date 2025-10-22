@@ -25,7 +25,7 @@ const Product = sequelize.define("Product", {
     allowNull: false,
   },
   unit: {
-    type: DataTypes.ENUM("unidad", "caja", "kg", "litro", "galon"),
+    type: DataTypes.ENUM("unidad", "caja", "kg", "litro", "galon","par"),
     defaultValue: "unidad",
   },
   price: {

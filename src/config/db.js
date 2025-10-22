@@ -12,7 +12,8 @@ export const sequelize = new Sequelize(
     dialect: "mysql",
     dialectOptions: {
       ssl: {
-        require: true, // Aiven necesita SSL
+        require: true,
+        rejectUnauthorized: false, // 👈 agrega esto
       },
     },
     logging: false,

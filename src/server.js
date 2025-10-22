@@ -16,9 +16,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 🧩 Importar modelos (en orden)
-import Order from "./models/Order.js";
+// 🧩 Importar modelos (en orden correcto)
 import Payment from "./models/Payment.js";
+import Order from "./models/Order.js";
 import Product from "./models/Product.js";
 
 // 🧭 Importar rutas

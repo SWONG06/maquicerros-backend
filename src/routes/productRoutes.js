@@ -1,29 +1,31 @@
-import { Router } from "express";
-import { authJWT } from "../middleware/authJWT.js";
-import { isAdmin } from "../middleware/isAdmin.js";
-import upload from "../middleware/uploadImage.js";
+import express from "express";
 import {
-  createProduct,
-  getProducts,
+  getAllProducts,
   getProductById,
-  deleteProduct,
+  createProduct,
   updateProduct,
-  updateProductStock,
-  updateProductImage,
-  updateProductStatus
+  deleteProduct,
+  updateStock,
 } from "../controllers/productController.js";
 
+const router = express.Router();
 
-const router = Router();
+// Obtener todos los productos
+router.get("/", getAllProducts);
 
-router.get("/", getProducts);
+// Obtener un producto por ID
 router.get("/:id", getProductById);
-router.post("/", authJWT, isAdmin, upload.single("image"), createProduct);
-router.put("/:id", authJWT, isAdmin, updateProduct);
-router.delete("/:id", authJWT, isAdmin, deleteProduct);
-router.patch("/:id/stock", authJWT, isAdmin, updateProductStock);
-router.patch("/:id/image", authJWT, isAdmin, upload.single("image"), updateProductImage);
-router.patch("/:id/status", authJWT, isAdmin, updateProductStatus);
 
+// Crear producto nuevo
+router.post("/", createProduct);
+
+// Actualizar producto completo
+router.put("/:id", updateProduct);
+
+// Actualizar solo el stock
+router.put("/:id/stock", updateStock);
+
+// Eliminar producto
+router.delete("/:id", deleteProduct);
 
 export default router;

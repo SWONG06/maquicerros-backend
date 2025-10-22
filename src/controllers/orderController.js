@@ -1,3 +1,4 @@
+// src/controllers/orderController.js
 import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 
@@ -6,26 +7,38 @@ import Payment from "../models/Payment.js";
  */
 export const createOrder = async (req, res) => {
   try {
-    const { items, total } = req.body;
+    const { items, total, userId } = req.body;
 
+    // Validaciones básicas
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "La orden debe tener al menos un producto" });
     }
 
+    if (!total || total <= 0) {
+      return res.status(400).json({ message: "El total de la orden no es válido" });
+    }
+
+    // Crear orden
     const order = await Order.create({
       items,
       total,
+      userId: userId || null,
       status: "created",
       paymentStatus: "unpaid",
     });
 
-    res.status(201).json({
-      message: "Orden creada correctamente ✅",
+    return res.status(201).json({
+      success: true,
+      message: "✅ Orden creada correctamente",
       order,
     });
   } catch (error) {
     console.error("❌ Error al crear orden:", error);
-    res.status(500).json({ message: "Error al crear la orden" });
+    res.status(500).json({
+      success: false,
+      message: "Error al crear la orden",
+      error: error.message,
+    });
   }
 };
 
@@ -39,15 +52,24 @@ export const getAllOrders = async (req, res) => {
         {
           model: Payment,
           as: "payments",
+          attributes: ["id", "amount", "status", "createdAt"],
         },
       ],
       order: [["createdAt", "DESC"]],
     });
 
-    res.json(orders);
+    return res.json({
+      success: true,
+      totalOrders: orders.length,
+      orders,
+    });
   } catch (error) {
     console.error("❌ Error al listar órdenes:", error);
-    res.status(500).json({ message: "Error al obtener las órdenes" });
+    res.status(500).json({
+      success: false,
+      message: "Error al obtener las órdenes",
+      error: error.message,
+    });
   }
 };
 
@@ -63,18 +85,22 @@ export const getOrderById = async (req, res) => {
     });
 
     if (!order) {
-      return res.status(404).json({ message: "Orden no encontrada" });
+      return res.status(404).json({ success: false, message: "Orden no encontrada" });
     }
 
-    res.json(order);
+    return res.json({ success: true, order });
   } catch (error) {
     console.error("❌ Error al obtener orden:", error);
-    res.status(500).json({ message: "Error interno" });
+    res.status(500).json({
+      success: false,
+      message: "Error interno al obtener la orden",
+      error: error.message,
+    });
   }
 };
 
 /**
- * 🟡 Actualizar estado de la orden
+ * 🟡 Actualizar estado o pago de una orden
  */
 export const updateOrderStatus = async (req, res) => {
   try {
@@ -83,20 +109,25 @@ export const updateOrderStatus = async (req, res) => {
 
     const order = await Order.findByPk(id);
     if (!order) {
-      return res.status(404).json({ message: "Orden no encontrada" });
+      return res.status(404).json({ success: false, message: "Orden no encontrada" });
     }
 
     if (status) order.status = status;
     if (paymentStatus) order.paymentStatus = paymentStatus;
     await order.save();
 
-    res.json({
-      message: "Orden actualizada correctamente",
+    return res.json({
+      success: true,
+      message: "✅ Orden actualizada correctamente",
       order,
     });
   } catch (error) {
     console.error("❌ Error al actualizar orden:", error);
-    res.status(500).json({ message: "Error al actualizar la orden" });
+    res.status(500).json({
+      success: false,
+      message: "Error al actualizar la orden",
+      error: error.message,
+    });
   }
 };
 
@@ -108,12 +139,22 @@ export const deleteOrder = async (req, res) => {
     const { id } = req.params;
     const order = await Order.findByPk(id);
 
-    if (!order) return res.status(404).json({ message: "Orden no encontrada" });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Orden no encontrada" });
+    }
 
     await order.destroy();
-    res.json({ message: "Orden eliminada correctamente" });
+
+    return res.json({
+      success: true,
+      message: "🗑️ Orden eliminada correctamente",
+    });
   } catch (error) {
     console.error("❌ Error al eliminar orden:", error);
-    res.status(500).json({ message: "Error interno" });
+    res.status(500).json({
+      success: false,
+      message: "Error al eliminar la orden",
+      error: error.message,
+    });
   }
 };
